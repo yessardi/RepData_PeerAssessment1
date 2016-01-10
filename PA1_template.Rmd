@@ -9,6 +9,7 @@ output: html_document
 1. Load the data
 ```{r, echo=TRUE,warning=FALSE, message=FALSE}
 activity = read.csv("activity.csv",stringsAsFactors = FALSE, header = TRUE)
+str(activity)
 head(activity)
 ```
 ***Remarks:-***  
@@ -18,6 +19,7 @@ Data has been loaded to dataframe **activity** and verified
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 activity$date = as.Date(activity$date)
 activity = activity[c(2,3,1)]
+str(activity)
 head(activity)
 ```
 ***Remarks:-***   
@@ -30,7 +32,7 @@ library(dplyr)
 result1 <-  activity %>%
     group_by(date) %>%
     summarize(total = sum(steps,na.rm = TRUE))
-print(result1)
+head(result1)
 ```
 ***Remarks:-***  
 Total number of steps per day calculated in data frame **result1** and verified  
@@ -47,6 +49,7 @@ Histogram of Total number of steps per day before imputation is calculated in **
 ```{r,echo=TRUE, warning=FALSE, message=FALSE}
 mean = as.integer(mean(result1$total,na.rm = TRUE))
 median = as.integer(median(result1$total,na.rm = TRUE))
+print(mean);print(median)
 ```
 ***Remarks:-***   
 
@@ -59,7 +62,7 @@ median = as.integer(median(result1$total,na.rm = TRUE))
 result2 <-  activity %>%
     group_by(interval) %>%
     summarize(average = mean(steps,na.rm = TRUE))
-print(result2)
+head(result2)
 plot(result2$interval,result2$average, type = "l", lwd = 1, col = "blue", xlab = "interval", ylab = "average steps", main = "Average Steps across time intervals"  )
 ```
 
@@ -67,6 +70,7 @@ plot(result2$interval,result2$average, type = "l", lwd = 1, col = "blue", xlab =
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 stepmax = result2[which.max(result2$average),]$average
 stepmaxint = result2[which.max(result2$average),]$interval
+print(stepmax);print(stepmaxint)
 ```
 ***Remarks:-***   
 
@@ -76,6 +80,7 @@ Maximum number of steps on average is **`r floor(stepmax)`** and is recorded in 
 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 countNA = sum(!complete.cases(activity))
+print(countNA)
 ```
 ***Remarks:-***   
 
@@ -86,6 +91,7 @@ Total number of missing values in **activity** dataset is **`r countNA`**
 result3 = merge(activity,result2,by="interval",all.x = TRUE)
 result3$stepsimpute = as.numeric(ifelse(is.na(result3$steps), floor(result3$average),result3$steps))
 result3 = result3[order(result3$date,result3$interval),]
+head(result3)
 ```
 ***Remarks:-***   
 
@@ -95,6 +101,7 @@ Missing steps data have been filled in by calculating the average across all day
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 activityimpute = result3[c(2,1,5)]
 activityimpute$stepsimpute = as.integer(activityimpute$stepsimpute)
+head(activityimpute)
 ```
 ***Remarks:-***   
 
@@ -102,25 +109,29 @@ New dataset **activityimpute** created with imputed values for **steps** data
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-result5 <-  activityimpute %>%
+result4 <-  activityimpute %>%
     group_by(date) %>%
     summarize(total = sum(stepsimpute))
-hist(result5$total, xlab = "Steps", main = "Histogram of daily steps", col = "wheat", breaks = 10)
+head(result4)
+hist(result4$total, xlab = "Steps", main = "Histogram of daily steps", col = "wheat", breaks = 10)
 ```
 
 ***Remarks:-***  
 
 Histogram tails are narrower and peak sharper after imputation
 ```{r,echo=TRUE, warning=FALSE, message=FALSE}
-mean1 = as.integer(mean(result5$total))
-median1 = as.integer(median(result5$total))
+mean1 = as.integer(mean(result4$total))
+median1 = as.integer(median(result4$total))
+print(mean1);print(median1)
+
 meanchg = as.integer((mean1-mean)/mean*100)
 medianchg = as.integer((median1-median)/median*100)
+print(meanchg);print(medianchg)
 ```
 ***Remarks:-***  
 
-+ New mean of total number of steps per day is **`r mean`**
-+ New median of total number of steps per day is **`r median`**
++ New mean of total number of steps per day is **`r mean1`**
++ New median of total number of steps per day is **`r median1`**
 + Mean has **increased** by **`r meanchg`%** and Median by **`r medianchg`%** after imputation
 
 ### Are there differences in activity patterns between weekdays and weekends?
@@ -128,10 +139,12 @@ medianchg = as.integer((median1-median)/median*100)
 library(lubridate)
 library(ggplot2)
 activityimpute$weekind = as.factor(ifelse(wday(as.Date(activityimpute$date)) %in% c(2,3,4,5,6),"weekday","weekend"))
-result8 <-  activityimpute %>%
+head(activityimpute)
+result5 <-  activityimpute %>%
     group_by(weekind,interval) %>%
     summarize(avg= mean(stepsimpute))
-ggplot(result8, 
+head(result5)
+ggplot(result5, 
        aes(x=interval, y=avg)) + 
     geom_line(color = "brown") + theme_light() +
     labs(x = "Time Interval", y = "Average Steps", title ="Average Steps - Weekday vs Weekend Variances") +
